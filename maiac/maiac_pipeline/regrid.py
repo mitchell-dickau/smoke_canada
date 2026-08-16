@@ -2,8 +2,8 @@
 
 Every field goes through the identical `np.bincount` weighting, which is what
 makes the downstream ratios coverage-weighted means rather than means of means
-(plan sections 15 and 17). float64 accumulators throughout: a month of CONUS
-pixel-days is ~10^8 additions into 31,460 cells, and float32 would visibly
+(plan sections 15 and 17). float64 accumulators throughout: a month of Canada
+pixel-days is ~10^8 additions into 41,172 cells, and float32 would visibly
 drift.
 """
 from __future__ import annotations
@@ -27,7 +27,7 @@ def accumulate_tile(
     """Add one tile's native-resolution fields into a flat 25 km accumulator.
 
     `cell_index` is the cached (1200, 1200) int32 map from `conus_masks`, with
-    -1 for pixels outside CONUS or off the target grid. Because MODIS
+    -1 for pixels outside Canada or off the target grid. Because MODIS
     sinusoidal tiles partition the globe without overlap, summing tile by tile
     never double-counts a source pixel.
     """

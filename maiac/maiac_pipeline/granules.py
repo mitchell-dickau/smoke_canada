@@ -145,7 +145,7 @@ def months_in_range(start: str, end: str) -> list[str]:
 
 
 def search_month(month: str, *, quiet: bool = False) -> list:
-    """Query CMR for every MCD19A2 granule intersecting CONUS in `month`.
+    """Query CMR for every MCD19A2 granule intersecting Canada in `month`.
 
     Returns the de-duplicated list of earthaccess DataGranule objects.
     """
@@ -156,7 +156,7 @@ def search_month(month: str, *, quiet: bool = False) -> list:
         short_name=config.SHORT_NAME,
         version=config.VERSION,
         cloud_hosted=True,
-        bounding_box=config.CONUS_BBOX,
+        bounding_box=config.CANADA_BBOX,
         temporal=(start, end),
     )
     return dedupe_granules(granules)

@@ -35,17 +35,15 @@ logging.basicConfig(
 )
 log = logging.getLogger("maiac.run")
 
-# The 22 MODIS sinusoidal tiles CMR returns for the CONUS bounding box,
-# confirmed against a real query rather than assumed. Only 14 of them turn out
-# to carry any CONUS land -- `conus_masks.useful_tiles` works out which at
-# startup and the rest are never downloaded.
-CONUS_TILES = [
-    "h07v05", "h07v06", "h08v04", "h08v05", "h08v06",
-    "h09v03", "h09v04", "h09v05", "h09v06",
-    "h10v03", "h10v04", "h10v05", "h10v06",
-    "h11v03", "h11v04", "h11v05", "h11v06",
-    "h12v03", "h12v04", "h12v05", "h13v03", "h13v04",
+# MODIS sinusoidal tiles intersecting the Canada bounding box.
+# `conus_masks.useful_tiles` filters down to the 32 tiles that actually
+# carry Canadian land polygons.
+CANADA_TILES = [
+    f"h{h:02d}v{v:02d}"
+    for h in range(7, 18)
+    for v in range(0, 5)
 ]
+CONUS_TILES = CANADA_TILES
 
 
 def _months(args) -> list[str]:
@@ -63,7 +61,7 @@ def main(argv=None) -> int:
     p.add_argument("--jobdir", default="/opt/maiac-25km")
     p.add_argument("--outdir", default="", help="defaults to <jobdir>/output")
     p.add_argument("--scratch", default="", help="raw HDF staging; defaults to <jobdir>/raw")
-    p.add_argument("--cache", default="", help="tile masks + CONUS polygon; defaults to <jobdir>/cache")
+    p.add_argument("--cache", default="", help="tile masks + Canada polygon; defaults to <jobdir>/cache")
     p.add_argument("--bucket", default="", help="gs://bucket for monthly checkpoints; empty disables GCS")
     p.add_argument("--gcs-prefix", default="maiac/monthly")
     p.add_argument("--workers", type=int, default=6, help="parallelism across MONTHS")
@@ -107,8 +105,8 @@ def main(argv=None) -> int:
     # Build every tile mask up front, single-threaded. Left to the pool, N
     # workers would race to create the same file on the first day of the run.
     # This also tells us which tiles are worth downloading at all.
-    tiles = conus_masks.useful_tiles(CONUS_TILES, cache)
-    log.info("%d/%d tiles carry CONUS land: %s", len(tiles), len(CONUS_TILES), " ".join(tiles))
+    tiles = conus_masks.useful_tiles(CANADA_TILES, cache)
+    log.info("%d/%d tiles carry Canada land: %s", len(tiles), len(CANADA_TILES), " ".join(tiles))
 
     _clear_stale_tmp(outdir)
 

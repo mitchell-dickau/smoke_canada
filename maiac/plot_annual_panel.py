@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Year-by-year facet of MAIAC smoke frequency over CONUS.
+"""Year-by-year facet of MAIAC smoke frequency over Canada.
 
 The MAIAC counterpart to the HMS ../noaa/ smoke-days panel: one small map per
 year, all on one shared color scale so the years are directly comparable. Covers
@@ -139,7 +139,7 @@ def main(argv=None) -> int:
         ax.set_visible(False)
 
     top = 1 - 0.55 / fig.get_figheight()
-    fig.suptitle("Smoke frequency by year, contiguous United States",
+    fig.suptitle("Smoke frequency by year, Canada",
                  fontsize=14, color=INK, x=0.5, y=top + 0.020)
     fig.text(0.5, top - 0.004,
              "MAIAC MCD19A2.061 — share of valid pixel-days retrieved with a smoke "

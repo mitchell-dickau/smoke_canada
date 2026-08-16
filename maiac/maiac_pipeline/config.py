@@ -1,10 +1,11 @@
-"""Frozen constants for the MAIAC 25 km CONUS pipeline.
+"""Frozen constants for the MAIAC 25 km Canada pipeline.
 
 Everything here is fixed for the life of the project. The target grid in
 particular must never change: every monthly file has to share one CRS,
 transform, and set of x/y coordinates so the months concatenate along `time`
-without alignment games (plan section 16).
+without alignment games.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -13,9 +14,10 @@ import numpy as np
 SHORT_NAME = "MCD19A2"
 VERSION = "061"
 
-# Deliberately larger than CONUS. The exact land mask is applied at native
+# Deliberately larger than Canada. The exact land mask is applied at native
 # 1 km resolution later, so this only has to be generous enough not to clip.
-CONUS_BBOX = (-125.0, 24.0, -66.0, 50.0)
+CANADA_BBOX = (-141.0, 41.5, -52.0, 83.5)
+CONUS_BBOX = CANADA_BBOX  # Backward compatibility alias
 
 # AOD_QA bit fields (MCD19A2 user guide).
 #   bits 3-4    land/water/snow/ice   0 = land
@@ -28,9 +30,7 @@ QA_MODEL_SHIFT, QA_MODEL_MASK = 13, 0b11
 SURFACE_LAND = 0
 AEROSOL_MODEL_SMOKE = 1
 
-# Primary product keeps only best-quality retrievals. The permissive {0, 11}
-# set is the plan's section 25 sensitivity experiment and is never merged into
-# the primary record -- it writes to a separate output prefix.
+# Primary product keeps only best-quality retrievals.
 QUALITY_PRIMARY = (0,)
 QUALITY_PERMISSIVE = (0, 11)
 
@@ -39,15 +39,16 @@ SUBDATASET_AOD = ":grid1km:Optical_Depth_055"
 SUBDATASET_QA = ":grid1km:AOD_QA"
 
 # ------------------------------------------------------------ target grid ---
-TARGET_CRS = "EPSG:5070"
+# EPSG:3978 - NAD83 / Canada Atlas Lambert Equal Area
+TARGET_CRS = "EPSG:3978"
 TARGET_RES = 25_000.0
-TARGET_XMIN = -3_000_000.0
-TARGET_XMAX = 3_050_000.0
-TARGET_YMIN = 100_000.0
-TARGET_YMAX = 3_350_000.0
+TARGET_XMIN = -2_400_000.0
+TARGET_XMAX = 3_075_000.0
+TARGET_YMIN = -800_000.0
+TARGET_YMAX = 3_900_000.0
 
-TARGET_NX = int(round((TARGET_XMAX - TARGET_XMIN) / TARGET_RES))  # 242
-TARGET_NY = int(round((TARGET_YMAX - TARGET_YMIN) / TARGET_RES))  # 130
+TARGET_NX = int(round((TARGET_XMAX - TARGET_XMIN) / TARGET_RES))  # 219
+TARGET_NY = int(round((TARGET_YMAX - TARGET_YMIN) / TARGET_RES))  # 188
 TARGET_NCELLS = TARGET_NX * TARGET_NY
 
 
@@ -60,9 +61,7 @@ def target_coords() -> tuple[np.ndarray, np.ndarray]:
 
 # ------------------------------------------- MODIS sinusoidal tile geometry --
 # The sphere MODIS land products are gridded on, not WGS84.
-MODIS_SINU_PROJ = (
-    "+proj=sinu +lon_0=0 +x_0=0 +y_0=0 +R=6371007.181 +units=m +no_defs"
-)
+MODIS_SINU_PROJ = "+proj=sinu +lon_0=0 +x_0=0 +y_0=0 +R=6371007.181 +units=m +no_defs"
 MODIS_TILE_SIZE = 1_111_950.5196666666  # metres, 10 degrees at the equator
 MODIS_X_MIN = -20_015_109.354
 MODIS_Y_MAX = 10_007_554.677
@@ -89,9 +88,5 @@ def tile_pixel_centres(h: int, v: int) -> tuple[np.ndarray, np.ndarray]:
 # why `valid_pixel_day_weight` is written to every file.
 ARCHIVE_START = "2000-02"
 
-# CONUS state boundaries, 1:20m cartographic. Small (~2 MB) and stable.
-CENSUS_STATES_URL = (
-    "https://www2.census.gov/geo/tiger/GENZ2023/shp/cb_2023_us_state_20m.zip"
-)
-# FIPS codes to drop: AK, HI, PR, VI, GU, AS, MP.
-NON_CONUS_FIPS = {"02", "15", "72", "78", "66", "60", "69"}
+# Canada boundary polygon source (Natural Earth 10m Admin-1 Provinces/Territories)
+CANADA_ADMIN1_URL = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_1_states_provinces.geojson"

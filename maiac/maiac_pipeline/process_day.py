@@ -1,4 +1,4 @@
-"""One day of CONUS tiles -> four 25 km sufficient-statistic arrays.
+"""One day of Canada tiles -> four 25 km sufficient-statistic arrays.
 
 This is the resumable UNIT. Everything it needs is derivable from its
 arguments, it writes exactly one small cache file atomically, and it deletes

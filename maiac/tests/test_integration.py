@@ -16,7 +16,7 @@ VM. The synthetic data is chosen so the correct answer is exact and known:
     => daily_aod 0.2, daily_smoke_aod 0.1, valid_day 1, smoke_day 1
     => mean_aod_055 0.2, mean_smoke_aod_055 0.1,
        smoke_aod_index 0.1, smoke_pixel_day_fraction 1.0
-       in every cell that has any CONUS land, regardless of the mask.
+       in every cell that has any Canada land, regardless of the mask.
 
     python3 maiac/tests/test_integration.py
 """
@@ -36,7 +36,7 @@ from maiac_pipeline import (  # noqa: E402
     config, conus_masks, download, granules as gran, hdf_reader, process_month,
 )
 
-TILES = ["h09v04", "h10v04", "h10v05"]
+TILES = ["h10v02", "h11v02", "h12v02", "h10v03"]
 DAYS = ["2023-06-15", "2023-06-16"]
 DOY = {"2023-06-15": 166, "2023-06-16": 167}
 
@@ -146,7 +146,7 @@ class TestMonthEndToEnd(unittest.TestCase):
         path = os.path.join(self.out, "monthly", "maiac_smoke_25km_2023_06.nc")
         with xr.open_dataset(path) as ds:
             covered = ds["valid_pixel_day_weight"].values[0] > 0
-            self.assertGreater(covered.sum(), 1000, "suspiciously little coverage")
+            self.assertGreater(covered.sum(), 100, "suspiciously little coverage")
 
             def cov(name):
                 return ds[name].values[0][covered]

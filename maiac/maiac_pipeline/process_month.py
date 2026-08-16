@@ -91,7 +91,7 @@ def process_month(
         )
         return f"[{month}] no granules returned, skipped"
 
-    # Drop tiles that hold no CONUS land before a single byte is transferred.
+    # Drop tiles that hold no Canada land before a single byte is transferred.
     if tiles:
         wanted = set(tiles)
         n_before = len(month_granules)
@@ -101,7 +101,7 @@ def process_month(
         ]
         if n_before != len(month_granules):
             log.info(
-                "[%s] %d/%d granules are on CONUS tiles", month, len(month_granules), n_before
+                "[%s] %d/%d granules are on Canada tiles", month, len(month_granules), n_before
             )
 
     by_day = gran.group_by_day(month_granules)

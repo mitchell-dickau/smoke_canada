@@ -9,9 +9,9 @@
 
 set -euo pipefail
 
-PROJECT="${PROJECT:-bullet-climate-analysis}"
+PROJECT="${PROJECT:-smoke-canada-analysis-505520}"
 REGION="${REGION:-us-west1}"
-BUCKET="${BUCKET:-gs://bullet-climate-analysis-maiac-25km}"
+BUCKET="${BUCKET:-gs://smoke-canada-analysis-505520-maiac-25km}"
 SA_NAME=maiac-runner
 SA="${SA_NAME}@${PROJECT}.iam.gserviceaccount.com"
 SECRET=earthdata-netrc

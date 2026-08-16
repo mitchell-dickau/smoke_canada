@@ -66,13 +66,10 @@ def main(argv=None) -> int:
         print(f"REFUSING to concat: {len(bad)} months are off-grid: {', '.join(bad)}",
               file=sys.stderr)
         return 1
-    print("grid check: all months share the frozen 130 x 242 EPSG:5070 grid")
+    print(f"grid check: all months share the frozen {config.TARGET_NY} x {config.TARGET_NX} {config.TARGET_CRS} grid")
 
-    ds = xr.open_mfdataset(
-        [found[m] for m in sorted(found)],
-        combine="nested", concat_dim="time", coords="minimal",
-        data_vars="minimal", compat="override",
-    ).sortby("time")
+    datasets = [xr.open_dataset(found[m]).load() for m in sorted(found)]
+    ds = xr.concat(datasets, dim="time").sortby("time")
 
     ds.attrs["n_months"] = len(found)
     ds.attrs["time_coverage_start"] = sorted(found)[0]

@@ -21,22 +21,21 @@
 
 set -euo pipefail
 
-PROJECT="${PROJECT:-bullet-climate-analysis}"
+PROJECT="${PROJECT:-smoke-canada-analysis-505520}"
 # us-west1 (Oregon) is the closest GCP region to AWS us-west-2, where NASA's
 # Earthdata Cloud data physically sits. Cross-cloud HTTPS is this job's
 # bottleneck, so the hop length is worth minimising.
 ZONE="${ZONE:-us-west1-b}"
-NAME="${NAME:-maiac-25km}"
+NAME="${NAME:-maiac-25km-2025}"
 MACHINE="${MACHINE:-n2-standard-16}"
 PROVISIONING="${PROVISIONING:-SPOT}"
-BUCKET="${BUCKET:-gs://bullet-climate-analysis-maiac-25km}"
+BUCKET="${BUCKET:-gs://smoke-canada-analysis-505520-maiac-25km}"
 SA="maiac-runner@${PROJECT}.iam.gserviceaccount.com"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Phase C of the plan: one month first, validated by eye, before committing to
-# 25 years of transfer.
-JOB_ARGS="${JOB_ARGS:---months 2023-06 --workers 1 --threads 12}"
-MAX_RUNTIME="${MAX_RUNTIME:-21600}"   # 6 h backstop for the single-month run
+# Run for 2025 archive (Jan-Dec 2025)
+JOB_ARGS="${JOB_ARGS:---start 2025-01 --end 2025-12 --workers 8 --threads 8}"
+MAX_RUNTIME="${MAX_RUNTIME:-21600}"   # 6 h backstop
 
 # Disk is sized for THROUGHPUT, not capacity. Only ~4 GB of raw HDF is ever on
 # disk at once (one day per month-worker), but pd-balanced scales at

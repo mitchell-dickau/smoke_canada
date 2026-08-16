@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Annual smoke frequency over CONUS from the MAIAC archive, as bars.
+"""Annual smoke frequency over Canada from the MAIAC archive, as bars.
 
 The MAIAC counterpart to ../noaa/plot_annual_bars.py. Covers the whole record,
 2000-02 through 2025-07, which means the first and last years are partial and are
@@ -195,7 +195,7 @@ def make_decomposition(df: pd.DataFrame, out: Path) -> Path:
     axes[-1].set_xticks(df["year"][::2])
     axes[-1].margins(x=0.02)
 
-    fig.suptitle("Annual smoke over the contiguous United States, decomposed",
+    fig.suptitle("Annual smoke over Canada, decomposed",
                  fontsize=13.5, color=INK, x=0.006, ha="left", y=0.985)
     fig.text(0.006, 0.955,
              "MAIAC MCD19A2.061, "
@@ -252,7 +252,7 @@ def make_figure(df: pd.DataFrame, out: Path) -> Path:
     ax.set_xticks(df["year"][::2])
     ax.margins(x=0.02)
     ax.set_title(
-        "Annual smoke frequency over the contiguous United States",
+        "Annual smoke frequency over Canada",
         fontsize=13.5, color=INK, pad=44, loc="left",
     )
     ax.text(

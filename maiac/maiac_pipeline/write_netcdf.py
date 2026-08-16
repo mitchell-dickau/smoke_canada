@@ -96,10 +96,10 @@ def build_dataset(fields: dict[str, np.ndarray], month: str, extra_attrs: dict) 
 
     ds["crs"] = np.int32(0)
     ds["crs"].attrs.update(
-        grid_mapping_name="albers_conical_equal_area",
-        standard_parallel=(29.5, 45.5),
-        longitude_of_central_meridian=-96.0,
-        latitude_of_projection_origin=23.0,
+        grid_mapping_name="lambert_conformal_conic",
+        standard_parallel=(49.0, 77.0),
+        longitude_of_central_meridian=-95.0,
+        latitude_of_projection_origin=49.0,
         false_easting=0.0,
         false_northing=0.0,
         spatial_ref=config.TARGET_CRS,
@@ -107,7 +107,7 @@ def build_dataset(fields: dict[str, np.ndarray], month: str, extra_attrs: dict) 
     )
 
     ds.attrs.update(
-        title="Monthly 25 km CONUS MAIAC aerosol optical depth and smoke statistics",
+        title="Monthly 25 km Canada MAIAC aerosol optical depth and smoke statistics",
         source_product=f"{config.SHORT_NAME}.{config.VERSION}",
         wavelength="550 nm",
         native_resolution="approximately 1 km (MODIS sinusoidal)",
@@ -118,7 +118,7 @@ def build_dataset(fields: dict[str, np.ndarray], month: str, extra_attrs: dict) 
         aggregation=(
             "observation -> native pixel-day -> 25 km monthly ratio of sums"
         ),
-        conus_mask="applied at native 1 km resolution, before spatial aggregation",
+        canada_mask="applied at native 1 km resolution, before spatial aggregation",
         Conventions="CF-1.10",
         history=(
             f"created {dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds')} "

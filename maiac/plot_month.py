@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Four-panel spot check for one monthly MAIAC file (plan section 24).
 
-June 2023 is the month to look at first: the Canadian wildfire smoke episode
-put a large, unambiguous signal over the eastern U.S., so a pipeline that is
+June 2023 is a great month to look at: the Canadian wildfire smoke episode
+put a large, unambiguous signal across Canada, so a pipeline that is
 wrong about smoke will look obviously wrong rather than subtly wrong.
 
-The grid is already in EPSG:5070, a projected CRS, so a plain imshow with the
-correct extent IS a correct map -- no cartopy needed. The state outline is
+The grid is already in EPSG:3978, a projected CRS, so a plain imshow with the
+correct extent IS a correct map -- no cartopy needed. The province outline is
 reprojected to match.
 
     python3 plot_month.py data/maiac/monthly/maiac_smoke_25km_2023_06.nc
@@ -30,33 +30,21 @@ PANELS = [
 ]
 
 
-def _states(ax_crs="EPSG:5070"):
-    """CONUS state outlines in the target CRS, or None if unavailable."""
+def _states(ax_crs=config.TARGET_CRS):
+    """Canada province/territory outlines in the target CRS, or None if unavailable."""
     try:
         import geopandas as gpd
 
         cache = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".plotcache")
         os.makedirs(cache, exist_ok=True)
-        path = os.path.join(cache, "states.geojson")
+        path = os.path.join(cache, "provinces.geojson")
         if not os.path.exists(path):
-            import requests
-
-            zip_path = os.path.join(cache, "states.zip")
-            if not os.path.exists(zip_path):
-                r = requests.get(config.CENSUS_STATES_URL, timeout=180)
-                r.raise_for_status()
-                with open(zip_path, "wb") as fh:
-                    fh.write(r.content)
-            import zipfile
-
-            with zipfile.ZipFile(zip_path) as zf:
-                shp = next(n for n in zf.namelist() if n.endswith(".shp"))
-            gdf = gpd.read_file(f"zip://{zip_path}!{shp}")
-            gdf = gdf[~gdf["STATEFP"].isin(config.NON_CONUS_FIPS)]
-            gdf.to_file(path, driver="GeoJSON")
+            states = gpd.read_file(config.CANADA_ADMIN1_URL)
+            canada = states[states["admin"] == "Canada"]
+            canada.to_file(path, driver="GeoJSON")
         return gpd.read_file(path).to_crs(ax_crs)
     except Exception as exc:  # outlines are decoration, not the point
-        print(f"  (state outlines unavailable: {exc})")
+        print(f"  (province outlines unavailable: {exc})")
         return None
 
 
@@ -104,7 +92,7 @@ def main(argv=None) -> int:
 
     covered = int(np.sum(weight > 0))
     fig.suptitle(
-        f"MAIAC MCD19A2.061 — {month} — 25 km CONUS (EPSG:5070)\n"
+        f"MAIAC MCD19A2.061 — {month} — 25 km Canada (EPSG:3978)\n"
         f"{covered:,} cells with data · median valid pixel-days/cell "
         f"{np.median(weight[weight > 0]):,.0f} · cells below {args.min_weight:g} hidden",
         fontsize=12,

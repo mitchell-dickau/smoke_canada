@@ -190,9 +190,9 @@ class TestPixelDayCollapse(unittest.TestCase):
 
 class TestTargetGrid(unittest.TestCase):
     def test_frozen_dimensions(self):
-        self.assertEqual(config.TARGET_NX, 242)
-        self.assertEqual(config.TARGET_NY, 130)
-        self.assertEqual(config.TARGET_NCELLS, 31460)
+        self.assertEqual(config.TARGET_NX, 219)
+        self.assertEqual(config.TARGET_NY, 188)
+        self.assertEqual(config.TARGET_NCELLS, 41172)
 
     def test_coordinates_are_cell_centres_inside_the_bounds(self):
         x, y = config.target_coords()
