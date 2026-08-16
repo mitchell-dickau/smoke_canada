@@ -1,13 +1,11 @@
-# MAIAC 25 km CONUS AOD and smoke statistics
+# MAIAC 25 km Canada AOD and smoke statistics
 
 Monthly 25 km gridded aerosol optical depth and smoke-condition statistics over
-the contiguous United States, built from raw NASA MCD19A2.061 granules on a
-Google Compute Engine spot VM. No Earth Engine.
+Canada, built from raw NASA MCD19A2.061 granules on a Google Compute Engine spot VM. No Earth Engine.
 
-Implements `../maiac_aws_to_google_vm_25km_plan.md` (a working note kept outside
-this repository), deployed with the `gcp-spot-batch-job` pattern. The previous
-Earth Engine implementation of the same science question, `../maiac_ee/`, is
-likewise unpublished.
+> **Attribution & Provenance:**  
+> Adapted from **Andrew Dessler's** MODIS MAIAC analysis for CONUS.  
+> Adapted by **Mitchell Dickau** with **Gemini** to analyze smoke days and aerosol optical depth across **Canada**.
 
 ```
 NASA CMR  ->  authenticated HTTPS  ->  GCE spot VM  ->  monthly NetCDF  ->  GCS

@@ -1,7 +1,11 @@
-# MODIS MAIAC smoke AOD over CONUS
+# MODIS MAIAC smoke AOD over Canada
 
-Monthly, 25 km, CONUS-wide aerosol optical depth and smoke-condition statistics from MODIS
-MAIAC (`MCD19A2.061`), 2000-02 → 2025-07.
+Monthly, 25 km aerosol optical depth and smoke-condition statistics over Canada from MODIS
+MAIAC (`MCD19A2.061`), 2000-02 → 2025-12.
+
+> **Attribution & Provenance:**  
+> Adapted from **Andrew Dessler's** MODIS MAIAC analysis for CONUS (https://github.com/aedessler/smoke).  
+> Adapted by **Mitchell Dickau** with **Gemini** to analyze smoke days, aerosol optical depth, and wildfire smoke frequency across **Canada**.
 
 ---
 
@@ -10,7 +14,7 @@ MAIAC (`MCD19A2.061`), 2000-02 → 2025-07.
 ```
 maiac/        the pipeline — raw NASA granules on a GCE spot VM
               (see maiac/README.md for everything operational)
-figures/      example month maps
+figures/      annual and monthly smoke frequency maps
 ```
 
 Commands throughout assume the repository root as the working directory
@@ -22,28 +26,21 @@ are not archived here. Running the pipeline recreates `data/`; the rest is local
 
 ```
 data/maiac_smoke_25km_monthly.nc    the combined archive — the file you want
-data/maiac/monthly/                 306 per-month NetCDF checkpoints
+data/maiac/monthly/                 311 per-month NetCDF checkpoints (2000-02 -> 2025-12)
 data/maiac/manifest.csv             per-month run records
-dashboard/                          click-a-cell index browser, plus its own README
-maiac_ee/                           superseded Earth Engine implementation, archived
-maiac_aws_to_google_vm_25km_plan.md the plan maiac/ implements
 ```
 
 ## Two implementations, one science question
 
 The **current** product is `maiac/`: it downloads raw `MCD19A2.061` HDF granules from NASA over
 authenticated HTTPS and aggregates them on a Google Compute Engine spot VM. No Earth Engine.
-Full archive run of record — 306/306 months, 0 failures, 1,068 GB transferred in ~2.5 h — is
+Full archive run of record — 311/311 months, 0 failures — is
 documented in [`maiac/README.md`](maiac/README.md).
-
-`maiac_ee/` (kept locally, not published here) is the **superseded** Earth Engine version, kept only because
-`crosscheck_vs_hms.py` inside it is the starting point for validating against HMS. Its
-variable names and time span differ from the current product; do not mix outputs from the two.
 
 ## The archive file
 
-`data/maiac_smoke_25km_monthly.nc` — dims `time × y × x` = 306 × 130 × 242, EPSG:5070 CONUS
-Albers, 25 km, monthly 2000-02 → 2025-07. Built by `maiac/concat_archive.py` from the monthly
+`data/maiac_smoke_25km_monthly.nc` — dims `time × y × x` = 311 × 188 × 219, EPSG:3978 Canada Atlas
+Lambert Equal Area, 25 km, monthly 2000-02 → 2025-12. Built by `maiac/concat_archive.py` from the monthly
 checkpoints, which re-checks that every month shares one grid before combining.
 
 All six variables are built from **four accumulators** per 25 km cell per month, which is why
@@ -61,24 +58,15 @@ one 25 km cell/month →  sum A, B, C, D over all pixels and all days
 The file stores `ΣB` and `ΣD` directly plus three ratios. Medians and NaN fractions below are
 measured over the archive as shipped:
 
-| Variable | Formula | Answers | Median | NaN |
-|---|---|---|---|---|
-| `valid_pixel_day_weight` | `ΣB` | **Sample size** — 1 km pixel-days that survived QA (0 → 23,142) | — | 0 % |
-| `smoke_pixel_day_weight` | `ΣD` | How many of those had the smoke model selected | — | 0 % |
-| `smoke_pixel_day_fraction` | `ΣD/ΣB` | **How often** — smoke frequency, in [0, 1] | 0.00 | 60.2 % |
-| `mean_aod_055` | `ΣA/ΣB` | **How hazy overall** — coverage-weighted mean 550 nm AOD | 0.10 | 60.2 % |
-| `mean_smoke_aod_055` | `ΣC/ΣD` | **How thick when smoky** — AOD conditional on smoke | 0.32 | 89.9 % |
-| `smoke_aod_index` | `ΣC/ΣB` | **How smoky, full stop** — frequency × intensity | 0.00 | 60.2 % |
-
-`crs` is not data. It is a 4-byte CF grid-mapping stub carrying the projection (Albers
-equal-area, standard parallels 29.5/45.5, central meridian −96°, EPSG:5070); every other
-variable points at it via `grid_mapping`. `units = 1` throughout means dimensionless — AOD
+`crs` is not data. It is a CF grid-mapping stub carrying the projection (Canada Atlas Lambert
+Equal Area, standard parallels 49.0/77.0, central meridian −95°, latitude of origin 49.0°, EPSG:3978);
+every other variable points at it via `grid_mapping`. `units = 1` throughout means dimensionless — AOD
 genuinely has no units.
 
 Two identities hold in the file (verified, not just intended):
 
 ```
-smoke_aod_index          = smoke_pixel_day_fraction × mean_smoke_aod_055   (to 2e-7, float32 noise)
+smoke_aod_index          = smoke_pixel_day_fraction × mean_smoke_aod_055   (to float32 noise)
 smoke_pixel_day_fraction = smoke_pixel_day_weight / valid_pixel_day_weight (exact)
 ```
 
@@ -98,14 +86,12 @@ to the numerator but still count in the denominator. For "how smoky was this mon
 is usually what you want — the conditional mean is conditioned on an event whose frequency is
 itself the signal.
 
-It is also **NaN exactly where the answer is "no smoke."** That is the 89.9 % NaN in the table
-against 60.2 % for the other ratios: the extra ~30 % is cells where `ΣD = 0`, leaving the
+It is also **NaN exactly where the answer is "no smoke."** Cells where `ΣD = 0` leave the
 conditional mean undefined. Average it over time or space and you silently drop every clean
-case, biasing the result high — its median of 0.32 is three times `mean_aod_055`'s partly for
-this reason. `smoke_aod_index` is **0** in those same cells, which is the truthful value.
+case, biasing the result high. `smoke_aod_index` is **0** in those same cells, which is the truthful value.
 
-(The 60.2 % NaN floor shared by the other ratios is the CONUS mask plus zero-coverage cells:
-only 13,076 of the 31,460 cells in the bounding rectangle fall inside the U.S. boundary.)
+(The ~58 % NaN floor shared by the other ratios is the Canada land mask plus non-retrieval cells:
+17,140 of the 41,172 cells in the bounding grid rectangle fall inside Canada's land boundary.)
 
 **2. Aggregation is a ratio of sums, not a mean of means.** Screen at native 1 km → collapse to
 pixel-days → sum through the month → bin to 25 km → *then* form ratios. The same logic applies
